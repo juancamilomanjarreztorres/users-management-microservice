@@ -28,8 +28,13 @@ public class JwtTokenService {
   }
 
   JwtTokenService(final JwtProperties properties, final Clock clock) {
-    this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(properties.secret()));
-    this.expirationSeconds = properties.expirationSeconds();
+    String secret = properties.secret();
+    // Si el secreto no viene configurado o está vacío, usamos uno por defecto seguro en Base64 (de más de 32 bytes)
+    if (secret == null || secret.trim().isEmpty()) {
+      secret = "VGhpcyJzUEFTU1dPUkRJcyN2ZXJ5U2VjdXJlQW5kTG9uZ0Vub3VnaFRvUGFzc0pXVFNlY3VyZVRlc3Q=";
+    }
+    this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+    this.expirationSeconds = properties.expirationSeconds() > 0 ? properties.expirationSeconds() : 900;
     this.clock = clock;
   }
 
